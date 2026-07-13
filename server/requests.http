@@ -1,0 +1,590 @@
+
+@baseUrl = http://localhost:3001
+@token = your_access_token_here
+@userToken = your_user_access_token_here
+@adminToken = your_admin_access_token_here
+@userId = replace_with_user_id
+@intentId = replace_with_intent_id
+@learningJobId = replace_with_learning_job_id
+@matchId = replace_with_match_id
+
+# Manual HTTP smoke collection for the running backend.
+# Replace the variables above, then run each request with a REST Client.
+# Automated Jest coverage remains in src/**/*.spec.ts and runs with `corepack pnpm test`.
+
+# ==========================================
+# ADMIN ENDPOINTS
+# ==========================================
+
+### GET /admin/overview
+GET {{baseUrl}}/admin/overview
+Authorization: Bearer {{token}}
+
+### GET /admin/users
+GET {{baseUrl}}/admin/users
+Authorization: Bearer {{token}}
+
+### GET /admin/properties
+GET {{baseUrl}}/admin/properties
+Authorization: Bearer {{token}}
+
+### GET /admin/properties/:id
+GET {{baseUrl}}/admin/properties/:id
+Authorization: Bearer {{token}}
+
+### PATCH /admin/properties/:id/status
+PATCH {{baseUrl}}/admin/properties/:id/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### GET /admin/raw-posts
+GET {{baseUrl}}/admin/raw-posts
+Authorization: Bearer {{token}}
+
+### POST /admin/raw-posts
+POST {{baseUrl}}/admin/raw-posts
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### POST /admin/raw-posts/import-json
+POST {{baseUrl}}/admin/raw-posts/import-json
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### GET /admin/raw-posts/:id
+GET {{baseUrl}}/admin/raw-posts/:id
+Authorization: Bearer {{token}}
+
+### POST /admin/raw-posts/:id/analyze
+POST {{baseUrl}}/admin/raw-posts/:id/analyze
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### GET /admin/inquiries
+GET {{baseUrl}}/admin/inquiries
+Authorization: Bearer {{token}}
+
+### GET /admin/inquiries/:id
+GET {{baseUrl}}/admin/inquiries/:id
+Authorization: Bearer {{token}}
+
+### PATCH /admin/inquiries/:id/status
+PATCH {{baseUrl}}/admin/inquiries/:id/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+
+# ==========================================
+# AUTH ENDPOINTS
+# ==========================================
+
+### POST /auth/register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    
+}
+
+### POST /auth/login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    
+}
+
+### POST /auth/logout
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+
+# ==========================================
+# ADMIN ENDPOINTS
+# ==========================================
+
+### POST /admin/data-sources
+POST {{baseUrl}}/admin/data-sources
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### GET /admin/data-sources
+GET {{baseUrl}}/admin/data-sources
+Authorization: Bearer {{token}}
+
+### GET /admin/data-sources/:id
+GET {{baseUrl}}/admin/data-sources/:id
+Authorization: Bearer {{token}}
+
+### PATCH /admin/data-sources/:id
+PATCH {{baseUrl}}/admin/data-sources/:id
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### PATCH /admin/data-sources/:id/status
+PATCH {{baseUrl}}/admin/data-sources/:id/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### POST /admin/demand-analysis/user-signals/:signalId
+POST {{baseUrl}}/admin/demand-analysis/user-signals/:signalId
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### GET /admin/external-behaviors
+GET {{baseUrl}}/admin/external-behaviors
+Authorization: Bearer {{token}}
+
+### GET /admin/external-behaviors/:id
+GET {{baseUrl}}/admin/external-behaviors/:id
+Authorization: Bearer {{token}}
+
+### POST /admin/external-behaviors/:id/retry
+POST {{baseUrl}}/admin/external-behaviors/:id/retry
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### POST /admin/external-behaviors
+POST {{baseUrl}}/admin/external-behaviors
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### GET /admin/external-behaviors
+GET {{baseUrl}}/admin/external-behaviors
+Authorization: Bearer {{token}}
+
+### PATCH /admin/external-behaviors/:id/status
+PATCH {{baseUrl}}/admin/external-behaviors/:id/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+
+# ==========================================
+# FAVORITES ENDPOINTS
+# ==========================================
+
+### POST /favorites
+POST {{baseUrl}}/favorites
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### GET /favorites
+GET {{baseUrl}}/favorites
+Authorization: Bearer {{token}}
+
+### GET /favorites/check/:propertyId
+GET {{baseUrl}}/favorites/check/:propertyId
+Authorization: Bearer {{token}}
+
+### DELETE /favorites/:propertyId
+DELETE {{baseUrl}}/favorites/:propertyId
+Authorization: Bearer {{token}}
+
+
+# ==========================================
+# HEALTH ENDPOINTS
+# ==========================================
+
+### GET /health
+GET {{baseUrl}}/health
+
+
+# ==========================================
+# INQUIRIES ENDPOINTS
+# ==========================================
+
+### POST /inquiries
+POST {{baseUrl}}/inquiries
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### GET /inquiries/me
+GET {{baseUrl}}/inquiries/me
+Authorization: Bearer {{token}}
+
+### GET /inquiries/:id
+GET {{baseUrl}}/inquiries/:id
+Authorization: Bearer {{token}}
+
+
+# ==========================================
+# ADMIN ENDPOINTS
+# ==========================================
+
+### GET /admin/learning-jobs
+GET {{baseUrl}}/admin/learning-jobs?page=1&limit=20
+Authorization: Bearer {{adminToken}}
+
+### GET /admin/learning-jobs/:id
+GET {{baseUrl}}/admin/learning-jobs/{{learningJobId}}
+Authorization: Bearer {{adminToken}}
+
+### POST /admin/learning-jobs/:id/retry
+POST {{baseUrl}}/admin/learning-jobs/{{learningJobId}}/retry
+Authorization: Bearer {{adminToken}}
+
+### POST /admin/users/:userId/learning/run
+POST {{baseUrl}}/admin/users/{{userId}}/learning/run
+Authorization: Bearer {{adminToken}}
+
+### GET /admin/users/:userId/intents
+GET {{baseUrl}}/admin/users/{{userId}}/intents
+Authorization: Bearer {{adminToken}}
+
+### GET /admin/users/:userId/preference-signals
+GET {{baseUrl}}/admin/users/{{userId}}/preference-signals
+Authorization: Bearer {{adminToken}}
+
+### GET /admin/learning-jobs without token - expect auth error
+GET {{baseUrl}}/admin/learning-jobs?page=1&limit=20
+
+
+# ==========================================
+# PROPERTIES ENDPOINTS
+# ==========================================
+
+### GET /properties
+GET {{baseUrl}}/properties
+
+### GET /properties/:id
+GET {{baseUrl}}/properties/:id
+
+
+# ==========================================
+# PROPERTY-ANALYSIS ENDPOINTS
+# ==========================================
+
+### POST /property-analysis/raw-posts/:rawPostId
+POST {{baseUrl}}/property-analysis/raw-posts/:rawPostId
+Content-Type: application/json
+
+{
+    
+}
+
+
+# ==========================================
+# RAW-POSTS ENDPOINTS
+# ==========================================
+
+### POST /raw-posts
+POST {{baseUrl}}/raw-posts
+Content-Type: application/json
+
+{
+    
+}
+
+### GET /raw-posts
+GET {{baseUrl}}/raw-posts
+
+### GET /raw-posts/:id
+GET {{baseUrl}}/raw-posts/:id
+
+
+# ==========================================
+# ADMIN ENDPOINTS
+# ==========================================
+
+### POST /admin/recommendations/user-demands/:demandId/run
+POST {{baseUrl}}/admin/recommendations/user-demands/:demandId/run
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### GET /admin/recommendations/user-demands/:demandId/matches
+GET {{baseUrl}}/admin/recommendations/user-demands/:demandId/matches
+Authorization: Bearer {{token}}
+
+### PATCH /admin/recommendations/matches/:matchId/status
+PATCH {{baseUrl}}/admin/recommendations/matches/:matchId/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### GET /recommendations/me
+GET {{baseUrl}}/recommendations/me?page=1&limit=20
+Authorization: Bearer {{userToken}}
+
+### POST /recommendations/matches/:matchId/feedback
+POST {{baseUrl}}/recommendations/matches/{{matchId}}/feedback
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+    "feedbackType": "CLICKED",
+    "metadata": {
+        "source": "requests-http-synthetic"
+    }
+}
+
+### POST /recommendations/me/recompute
+POST {{baseUrl}}/recommendations/me/recompute
+Authorization: Bearer {{userToken}}
+
+### POST /admin/source-imports/json
+POST {{baseUrl}}/admin/source-imports/json
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### GET /admin/source-imports
+GET {{baseUrl}}/admin/source-imports
+Authorization: Bearer {{token}}
+
+### GET /admin/source-imports/:id
+GET {{baseUrl}}/admin/source-imports/:id
+Authorization: Bearer {{token}}
+
+
+# ==========================================
+# USER-BEHAVIORS ENDPOINTS
+# ==========================================
+
+### POST /user-behaviors
+POST {{baseUrl}}/user-behaviors
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+    "eventType": "SEARCH",
+    "keyword": "can ho cho thue gan truong",
+    "filters": {
+        "transactionType": "RENT",
+        "propertyType": "APARTMENT",
+        "district": "Cau Giay"
+    },
+    "metadata": {
+        "source": "requests-http-synthetic"
+    },
+    "eventKey": "requests-http-search-001"
+}
+
+### POST /user-behaviors weak view - expect low-priority micro-batch
+POST {{baseUrl}}/user-behaviors
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+    "eventType": "RECOMMENDATION_VIEW",
+    "keyword": "can ho",
+    "eventKey": "requests-http-view-001"
+}
+
+### POST /user-behaviors invalid eventType - expect { code, message } error
+POST {{baseUrl}}/user-behaviors
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+    "eventType": "INVALID_EVENT_TYPE"
+}
+
+### POST /user-behaviors without token - expect auth error
+POST {{baseUrl}}/user-behaviors
+Content-Type: application/json
+
+{
+    "eventType": "SEARCH",
+    "keyword": "synthetic unauthorized request"
+}
+
+### GET /user-behaviors/me
+GET {{baseUrl}}/user-behaviors/me?page=1&limit=20
+Authorization: Bearer {{userToken}}
+
+
+# ==========================================
+# ADMIN ENDPOINTS
+# ==========================================
+
+### GET /admin/user-demands
+GET {{baseUrl}}/admin/user-demands
+Authorization: Bearer {{token}}
+
+### GET /admin/user-demands/:id
+GET {{baseUrl}}/admin/user-demands/:id
+Authorization: Bearer {{token}}
+
+### PATCH /admin/user-demands/:id/status
+PATCH {{baseUrl}}/admin/user-demands/:id/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+
+# ==========================================
+# USERS ENDPOINTS
+# ==========================================
+
+### GET /users/me/real-estate-context
+GET {{baseUrl}}/users/me/real-estate-context
+Authorization: Bearer {{userToken}}
+
+### PATCH /users/me/real-estate-context
+PATCH {{baseUrl}}/users/me/real-estate-context
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+    "anchors": [
+        {
+            "anchorType": "WORKPLACE",
+            "rawLocation": "Cau Giay, Ha Noi",
+            "province": "Ha Noi",
+            "district": "Cau Giay",
+            "label": "Synthetic workplace",
+            "baseWeight": 2
+        }
+    ]
+}
+
+### GET /users/me/intents
+GET {{baseUrl}}/users/me/intents
+Authorization: Bearer {{userToken}}
+
+### PATCH /users/me/intents/:id/status
+PATCH {{baseUrl}}/users/me/intents/{{intentId}}/status
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+    "status": "CLOSED"
+}
+
+### GET /users/me/real-estate-data/export
+GET {{baseUrl}}/users/me/real-estate-data/export
+Authorization: Bearer {{userToken}}
+
+### DELETE /users/me/real-estate-data - destructive, run only with synthetic/dev user
+DELETE {{baseUrl}}/users/me/real-estate-data
+Authorization: Bearer {{userToken}}
+
+### GET /users/me/intents without token - expect auth error
+GET {{baseUrl}}/users/me/intents
+
+
+# ==========================================
+# USER-PREFERENCES ENDPOINTS
+# ==========================================
+
+### GET /user-preferences/me
+GET {{baseUrl}}/user-preferences/me
+Authorization: Bearer {{userToken}}
+
+### POST /user-preferences/recompute
+POST {{baseUrl}}/user-preferences/recompute
+Authorization: Bearer {{userToken}}
+
+
+# ==========================================
+# ADMIN ENDPOINTS
+# ==========================================
+
+### POST /admin/user-signals
+POST {{baseUrl}}/admin/user-signals
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}
+
+### GET /admin/user-signals
+GET {{baseUrl}}/admin/user-signals
+Authorization: Bearer {{token}}
+
+### GET /admin/user-signals/:id
+GET {{baseUrl}}/admin/user-signals/:id
+Authorization: Bearer {{token}}
+
+
+# ==========================================
+# USERS ENDPOINTS
+# ==========================================
+
+### GET /users/me
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{token}}
+
+### PATCH /users/me
+PATCH {{baseUrl}}/users/me
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    
+}

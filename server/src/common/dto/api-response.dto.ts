@@ -1,0 +1,24 @@
+import { ResponseCode, ResponseMessage } from '../constants/response-code.constant.ts';
+
+export class ApiResponse<T = unknown> {
+    code: string;
+    message: string;
+    data?: T;
+
+    constructor(code: ResponseCode, data?: T, message?: string) {
+        this.code = code;
+        this.message = message ?? ResponseMessage[code] ?? 'Unknown';
+
+        if (data !== undefined) {
+            this.data = data;
+        }
+    }
+
+    static success<T>(data?: T): ApiResponse<T> {
+        return new ApiResponse(ResponseCode.OK, data);
+    }
+
+    static error(code: ResponseCode, message?: string): ApiResponse {
+        return new ApiResponse(code, undefined, message);
+    }
+}

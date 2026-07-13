@@ -1,0 +1,26 @@
+services:
+    postgres:
+        image: postgres:16-alpine
+        container_name: support-bds-postgres
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: support_bds
+            POSTGRES_PASSWORD: support_bds
+            POSTGRES_DB: support_bds
+        ports:
+            - "5433:5432"
+        volumes:
+            - support_bds_postgres:/var/lib/postgresql/data
+
+    mongodb:
+        image: mongo:7
+        container_name: support-bds-mongodb
+        restart: unless-stopped
+        ports:
+            - "27017:27017"
+        volumes:
+            - support_bds_mongo:/data/db
+
+volumes:
+    support_bds_postgres:
+    support_bds_mongo:

@@ -1,0 +1,12 @@
+{
+    "name": "support-bds",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev:api": "corepack pnpm --filter api start:dev",
+        "dev:web": "corepack pnpm --filter web dev",
+        "build:api": "corepack pnpm --filter api build",
+        "build:web": "corepack pnpm --filter web build"
+    },
+    "packageManager": "pnpm@9.15.0"
+}

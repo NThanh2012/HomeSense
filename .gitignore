@@ -1,0 +1,47 @@
+node_modules/
+dist/
+.next/
+coverage/
+*.tsbuildinfo
+.turbo/
+.cache/
+.pnpm-store/
+.eslintcache
+package-lock.json
+
+# Local tests and demo seed data are intentionally not published
+server/test/
+server/tsconfig.spec.json
+server/scripts/
+server/tsconfig.seed.json
+
+.env
+.env.local
+.env.*.local
+
+*.log
+.codex-*.log
+
+# Local editor and Codex tooling
+.vscode/
+.agents/
+.codex/
+AGENTS.md
+skills-lock.json
+
+# Local report and LaTeX build artifacts
+Báo cáo.tex
+Báo Cáo Project II.pdf
+*.aux
+*.toc
+*.lof
+*.lot
+*.out
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini

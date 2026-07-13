@@ -1,0 +1,806 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TransactionType {
+  SELL
+  RENT
+  UNKNOWN
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  LAND
+  VILLA
+  ROOM
+  UNKNOWN
+}
+
+enum PropertyStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum DataSourceType {
+  FACEBOOK
+  WEBSITE
+  PARTNER_API
+  MANUAL_IMPORT
+  USER_SUBMITTED
+  PUBLIC_DATASET
+  DEV_SYNTHETIC
+  OTHER
+}
+
+enum DataPermissionType {
+  AUTHORIZED_API
+  PARTNER_AGREEMENT
+  USER_SUBMITTED
+  PUBLIC_ALLOWED
+  DEV_SYNTHETIC
+  UNKNOWN
+}
+
+enum SourceImportType {
+  JSON
+}
+
+enum SourceImportTargetType {
+  PROPERTY_POST
+  USER_SIGNAL
+  EXTERNAL_BEHAVIOR
+}
+
+enum SourceImportStatus {
+  PROCESSING
+  COMPLETED
+  PARTIAL
+  FAILED
+}
+
+enum SourceImportRecordStatus {
+  CREATED
+  SKIPPED
+  FAILED
+}
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+enum DemandType {
+  BUY
+  RENT
+  SELL
+  UNKNOWN
+}
+
+enum UserDemandStatus {
+  NEW
+  ANALYZED
+  MATCHED
+  ARCHIVED
+  INVALID
+}
+
+enum UserDemandOrigin {
+  EXPLICIT
+  EXTERNAL_BEHAVIOR
+}
+
+enum UserBehaviorSource {
+  INTERNAL
+  EXTERNAL
+}
+
+enum ExternalBehaviorAnalysisStatus {
+  ANALYZED
+  REVIEW_REQUIRED
+  FAILED
+}
+
+enum PreferenceSignalType {
+  TRANSACTION_TYPE
+  PROPERTY_TYPE
+  LOCATION
+  PRICE_RANGE
+  AREA_RANGE
+  KEYWORD
+  BEDROOMS
+  BATHROOMS
+  FURNISHING
+  LEGAL_STATUS
+  DIRECTION
+  AMENITY
+  NEARBY_PLACE
+  LOCATION_ANCHOR
+}
+
+enum PreferenceSignalSource {
+  WEBSITE_BEHAVIOR
+  EXTERNAL_BEHAVIOR
+  USER_PROFILE
+}
+
+enum RealEstateIntentStatus {
+  ACTIVE
+  CLOSED
+  ARCHIVED
+}
+
+enum LocationAnchorType {
+  RESIDENCE
+  HOMETOWN
+  WORKPLACE
+  SCHOOL
+  FREQUENT
+  OTHER
+}
+
+enum LearningJobType {
+  EXTERNAL_LEARNING
+  RECOMMENDATION_RECOMPUTE
+  RAW_CLEANUP
+}
+
+enum LearningJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  PARTIAL
+  FAILED
+}
+
+enum LearningJobPriority {
+  LOW
+  NORMAL
+  HIGH
+  IMMEDIATE
+}
+
+enum LearningJobItemStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  SKIPPED
+  FAILED
+}
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  passwordHash String
+  fullName     String?
+  phone        String?
+  role         UserRole   @default(USER)
+  status       UserStatus @default(ACTIVE)
+  authToken    String?    @unique
+  favorites    Favorite[]
+  inquiries    Inquiry[]
+  demands      UserDemand[]
+  behaviorEvents UserBehaviorEvent[]
+  preferenceProfile UserPreferenceProfile?
+  createdDataSources DataSource[] @relation("DataSourceCreatedBy")
+  createdSourceImportBatches SourceImportBatch[] @relation("SourceImportBatchCreatedBy")
+  externalUserLinks ExternalUserLink[] @relation("ExternalUserLinkUser")
+  linkedExternalUsers ExternalUserLink[] @relation("ExternalUserLinkLinkedBy")
+  preferenceSignals UserPreferenceSignal[]
+  realEstateIntents UserRealEstateIntent[]
+  locationAnchors UserLocationAnchor[]
+  learningJobs LearningJob[]
+  recommendationRecomputeJobs RecommendationRecomputeJob[]
+  submittedProperties Property[] @relation("PropertySubmittedBy")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([status])
+  @@index([role])
+}
+
+model DataSource {
+  id              String             @id @default(uuid())
+  name            String
+  sourceType      DataSourceType
+  platform        String?
+  baseUrl         String?
+  description     String?
+  permissionType  DataPermissionType
+  permissionNote  String
+  isActive        Boolean            @default(false)
+  createdByUserId String
+  createdBy       User               @relation("DataSourceCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  importBatches   SourceImportBatch[]
+  externalUserLinks ExternalUserLink[]
+  externalBehaviorAnalyses ExternalBehaviorAnalysis[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([sourceType])
+  @@index([permissionType])
+  @@index([isActive])
+  @@index([createdByUserId])
+}
+
+model SourceImportBatch {
+  id              String                 @id @default(uuid())
+  dataSourceId    String
+  importType      SourceImportType       @default(JSON)
+  targetType      SourceImportTargetType
+  status          SourceImportStatus     @default(PROCESSING)
+  totalRecords    Int                    @default(0)
+  successCount    Int                    @default(0)
+  skippedCount    Int                    @default(0)
+  failedCount     Int                    @default(0)
+  errorMessage    String?
+  startedAt       DateTime               @default(now())
+  finishedAt      DateTime?
+  createdByUserId String
+  dataSource      DataSource             @relation(fields: [dataSourceId], references: [id], onDelete: Restrict)
+  createdBy       User                   @relation("SourceImportBatchCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  records         SourceImportRecord[]
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  @@index([dataSourceId])
+  @@index([targetType])
+  @@index([status])
+  @@index([createdByUserId])
+  @@index([createdAt])
+}
+
+model SourceImportRecord {
+  id           String                   @id @default(uuid())
+  batchId      String
+  recordIndex  Int
+  rawRecordId  String?
+  externalId   String?
+  status       SourceImportRecordStatus
+  errorMessage String?
+  batch        SourceImportBatch        @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  createdAt    DateTime                 @default(now())
+
+  @@unique([batchId, recordIndex])
+  @@index([batchId])
+  @@index([status])
+  @@index([rawRecordId])
+}
+
+model ExternalUserLink {
+  id              String     @id @default(uuid())
+  dataSourceId    String
+  externalUserRef String
+  userId          String
+  isActive        Boolean    @default(true)
+  linkedByUserId  String
+  dataSource      DataSource @relation(fields: [dataSourceId], references: [id], onDelete: Restrict)
+  user            User       @relation("ExternalUserLinkUser", fields: [userId], references: [id], onDelete: Cascade)
+  linkedBy        User       @relation("ExternalUserLinkLinkedBy", fields: [linkedByUserId], references: [id], onDelete: Restrict)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@unique([dataSourceId, externalUserRef])
+  @@index([userId, isActive])
+  @@index([linkedByUserId])
+}
+
+model ExternalBehaviorAnalysis {
+  id                    String                         @id @default(uuid())
+  rawExternalBehaviorId String                         @unique
+  dataSourceId          String
+  externalUserRef       String
+  status                ExternalBehaviorAnalysisStatus
+  provider              String
+  model                 String
+  promptVersion         String
+  eventType             UserBehaviorEventType?
+  demandType            DemandType                    @default(UNKNOWN)
+  propertyTypes         PropertyType[]                 @default([])
+  minPrice              Decimal?                      @db.Decimal(18, 2)
+  maxPrice              Decimal?                      @db.Decimal(18, 2)
+  minArea               Float?
+  maxArea               Float?
+  province              String?
+  district              String?
+  rawLocation           String?
+  keywords              String[]                      @default([])
+  confidence            Float                         @default(0)
+  occurredAt            DateTime?
+  result                Json
+  errorMessage          String?
+  dataSource            DataSource                     @relation(fields: [dataSourceId], references: [id], onDelete: Restrict)
+  behaviorEvent         UserBehaviorEvent?
+  preferenceSignals     UserPreferenceSignal[]
+  estimatedInputTokens  Int                            @default(0)
+  estimatedOutputTokens Int                            @default(0)
+  cacheKey              String?
+  createdAt             DateTime                       @default(now())
+  updatedAt             DateTime                       @updatedAt
+
+  @@index([dataSourceId, externalUserRef])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  userId     String
+  propertyId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+}
+
+model Inquiry {
+  id           String        @id @default(uuid())
+  userId       String
+  propertyId   String
+  message      String
+  contactName  String?
+  contactPhone String?
+  status       InquiryStatus @default(NEW)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property     Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([propertyId])
+  @@index([status])
+}
+
+model Location {
+  id          String     @id @default(uuid())
+  province   String?
+  district   String?
+  ward       String?
+  street     String?
+  rawAddress String?
+  latitude    Float?
+  longitude   Float?
+  properties Property[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Property {
+  id              String             @id @default(uuid())
+  rawPostId       String?            @unique
+  title           String
+  description     String?
+  transactionType TransactionType    @default(UNKNOWN)
+  propertyType    PropertyType       @default(UNKNOWN)
+  price           Decimal?           @db.Decimal(18, 2)
+  area            Float?
+  bedrooms        Int?
+  bathrooms       Int?
+  furnishingStatus String?
+  legalStatus     String?
+  direction       String?
+  amenities       String[]           @default([])
+  latitude        Float?
+  longitude       Float?
+  contactPhone    String?
+  sourceName      String?
+  sourceUrl       String?
+  status          PropertyStatus     @default(DRAFT)
+  createdByUserId String?
+  locationId      String?
+  location        Location?          @relation(fields: [locationId], references: [id])
+  createdBy       User?              @relation("PropertySubmittedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  media           PropertyMedia[]
+  analyses        PropertyAnalysis[]
+  favorites       Favorite[]
+  inquiries       Inquiry[]
+  demandMatches   DemandPropertyMatch[]
+  behaviorEvents  UserBehaviorEvent[]
+  nearbyPlaces    PropertyNearbyPlace[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([transactionType])
+  @@index([propertyType])
+  @@index([status])
+  @@index([createdByUserId])
+}
+
+model PropertyNearbyPlace {
+  id         String   @id @default(uuid())
+  propertyId String
+  category   String
+  name       String
+  distanceKm Float?
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([propertyId])
+  @@index([category])
+}
+
+model PropertyMedia {
+  id        String    @id @default(uuid())
+  propertyId String
+  property  Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url       String
+  type      MediaType @default(IMAGE)
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([propertyId])
+}
+
+model PropertyAnalysis {
+  id                       String           @id @default(uuid())
+  rawPostId                String
+  propertyId               String?
+  property                 Property?        @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  extractedTitle           String?
+  extractedAddress         String?
+  extractedPrice           Decimal?         @db.Decimal(18, 2)
+  extractedArea            Float?
+  extractedPhone           String?
+  extractedTransactionType TransactionType  @default(UNKNOWN)
+  extractedPropertyType    PropertyType     @default(UNKNOWN)
+  extractedBedrooms        Int?
+  extractedBathrooms       Int?
+  extractedFurnishingStatus String?
+  extractedLegalStatus     String?
+  extractedDirection       String?
+  extractedAmenities       String[]         @default([])
+  parserVersion            String           @default("rule-v1")
+  provider                 String            @default("RULE_BASED")
+  model                    String?
+  confidence               Float            @default(0)
+  result                   Json
+  createdAt                DateTime         @default(now())
+
+  @@index([rawPostId])
+  @@index([propertyId])
+}
+
+model UserDemand {
+  id               String             @id @default(uuid())
+  userId           String?
+  user             User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  externalUserRef  String?
+  demandType       DemandType         @default(UNKNOWN)
+  propertyTypes    PropertyType[]     @default([])
+  minPrice         Decimal?           @db.Decimal(18, 2)
+  maxPrice         Decimal?           @db.Decimal(18, 2)
+  minArea          Float?
+  maxArea          Float?
+  province         String?
+  district         String?
+  ward             String?
+  rawLocation      String?
+  keywords         String[]           @default([])
+  contactPhone     String?
+  sourceConfidence Float              @default(0)
+  status           UserDemandStatus   @default(NEW)
+  origin           UserDemandOrigin   @default(EXPLICIT)
+  behaviorDerivedKey String?          @unique
+  signals          UserDemandSignal[]
+  analyses         DemandAnalysis[]
+  matches          DemandPropertyMatch[]
+  behaviorEvents   UserBehaviorEvent[]
+  intent           UserRealEstateIntent?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([externalUserRef])
+  @@index([demandType])
+  @@index([status])
+  @@index([province])
+  @@index([district])
+}
+
+model UserDemandSignal {
+  id              String     @id @default(uuid())
+  userDemandId    String
+  userDemand      UserDemand @relation(fields: [userDemandId], references: [id], onDelete: Cascade)
+  rawUserSignalId String     @unique
+  sourceType      String
+  sourceName      String
+  sourceUrl       String?
+  createdAt       DateTime   @default(now())
+
+  @@index([userDemandId])
+  @@index([sourceType])
+}
+
+model DemandAnalysis {
+  id                     String        @id @default(uuid())
+  rawUserSignalId        String        @unique
+  userDemandId           String?
+  userDemand             UserDemand?   @relation(fields: [userDemandId], references: [id], onDelete: SetNull)
+  extractedDemandType    DemandType    @default(UNKNOWN)
+  extractedPropertyTypes PropertyType[] @default([])
+  extractedMinPrice      Decimal?      @db.Decimal(18, 2)
+  extractedMaxPrice      Decimal?      @db.Decimal(18, 2)
+  extractedMinArea       Float?
+  extractedMaxArea       Float?
+  extractedRawLocation   String?
+  extractedProvince      String?
+  extractedDistrict      String?
+  extractedPhone         String?
+  confidence             Float         @default(0)
+  result                 Json
+  createdAt              DateTime      @default(now())
+
+  @@index([userDemandId])
+}
+
+enum DemandMatchStatus {
+  ACTIVE
+  DISMISSED
+  CONTACTED
+  OUTDATED
+}
+
+model DemandPropertyMatch {
+  id             String            @id @default(uuid())
+  demandId       String
+  propertyId     String
+  demand         UserDemand        @relation(fields: [demandId], references: [id], onDelete: Cascade)
+  property       Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  matchScore     Float
+  matchReasons   String[]          @default([])
+  scoreBreakdown Json
+  status         DemandMatchStatus @default(ACTIVE)
+  behaviorEvents UserBehaviorEvent[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@unique([demandId, propertyId])
+  @@index([demandId])
+  @@index([propertyId])
+  @@index([matchScore])
+  @@index([status])
+}
+
+enum UserBehaviorEventType {
+  PROPERTY_VIEW
+  PROPERTY_SAVE
+  PROPERTY_UNSAVE
+  INQUIRY_CREATED
+  SEARCH
+  FILTER_APPLIED
+  RECOMMENDATION_VIEW
+  RECOMMENDATION_CLICK
+  RECOMMENDATION_SAVE
+  RECOMMENDATION_DISMISS
+  RECOMMENDATION_CONTACT
+}
+
+model UserBehaviorEvent {
+  id         String                @id @default(uuid())
+  userId     String
+  propertyId String?
+  demandId   String?
+  matchId    String?
+  eventType  UserBehaviorEventType
+  keyword    String?
+  filters    Json?
+  metadata   Json?
+  eventKey   String?               @unique
+  source     UserBehaviorSource    @default(INTERNAL)
+  occurredAt DateTime?
+  externalBehaviorAnalysisId String? @unique
+  user       User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property?             @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  demand     UserDemand?           @relation(fields: [demandId], references: [id], onDelete: SetNull)
+  match      DemandPropertyMatch?  @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  externalBehaviorAnalysis ExternalBehaviorAnalysis? @relation(fields: [externalBehaviorAnalysisId], references: [id], onDelete: SetNull)
+  preferenceSignals UserPreferenceSignal[]
+  createdAt  DateTime              @default(now())
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([propertyId])
+  @@index([demandId])
+  @@index([matchId])
+  @@index([createdAt])
+  @@index([source])
+  @@index([occurredAt])
+}
+
+model UserPreferenceProfile {
+  id                         String   @id @default(uuid())
+  userId                     String   @unique
+  preferredTransactionTypes  Json     @default("{}")
+  preferredPropertyTypes     Json     @default("{}")
+  preferredLocations         Json     @default("{}")
+  keywords                   Json     @default("{}")
+  preferredMinPrice          Decimal? @db.Decimal(18, 2)
+  preferredMaxPrice          Decimal? @db.Decimal(18, 2)
+  preferredMinArea           Float?
+  preferredMaxArea           Float?
+  lastComputedAt             DateTime?
+  lastEventAt                DateTime?
+  isStale                    Boolean  @default(false)
+  user                       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+}
+
+model UserPreferenceSignal {
+  id                         String                 @id @default(uuid())
+  userId                     String
+  signalType                 PreferenceSignalType
+  source                     PreferenceSignalSource
+  value                      Json
+  baseWeight                 Float
+  confidence                 Float                  @default(1)
+  occurredAt                 DateTime
+  provenanceKey              String?                @unique
+  behaviorEventId            String?
+  externalBehaviorAnalysisId String?
+  user                       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  behaviorEvent              UserBehaviorEvent?     @relation(fields: [behaviorEventId], references: [id], onDelete: SetNull)
+  externalBehaviorAnalysis   ExternalBehaviorAnalysis? @relation(fields: [externalBehaviorAnalysisId], references: [id], onDelete: SetNull)
+  intents                    IntentPreferenceSignal[]
+  createdAt                  DateTime               @default(now())
+
+  @@index([userId, signalType])
+  @@index([userId, occurredAt])
+  @@index([behaviorEventId])
+  @@index([externalBehaviorAnalysisId])
+}
+
+model UserRealEstateIntent {
+  id            String                 @id @default(uuid())
+  userId        String
+  demandId      String?                @unique
+  intentKey     String
+  demandType    DemandType             @default(UNKNOWN)
+  propertyTypes PropertyType[]         @default([])
+  province      String?
+  district      String?
+  keywords      String[]               @default([])
+  strength      Float                  @default(0)
+  lastSignalAt  DateTime?
+  status        RealEstateIntentStatus @default(ACTIVE)
+  user          User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  demand        UserDemand?            @relation(fields: [demandId], references: [id], onDelete: SetNull)
+  signals       IntentPreferenceSignal[]
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  @@unique([userId, intentKey])
+  @@index([userId, status])
+  @@index([lastSignalAt])
+}
+
+model IntentPreferenceSignal {
+  id        String               @id @default(uuid())
+  intentId  String
+  signalId  String
+  intent    UserRealEstateIntent @relation(fields: [intentId], references: [id], onDelete: Cascade)
+  signal    UserPreferenceSignal @relation(fields: [signalId], references: [id], onDelete: Cascade)
+  createdAt DateTime             @default(now())
+
+  @@unique([intentId, signalId])
+  @@index([signalId])
+}
+
+model UserLocationAnchor {
+  id          String                 @id @default(uuid())
+  userId      String
+  anchorType  LocationAnchorType
+  label       String?
+  province    String?
+  district    String?
+  rawLocation String
+  latitude    Float?
+  longitude   Float?
+  baseWeight  Float                  @default(1)
+  confidence  Float                  @default(1)
+  source      PreferenceSignalSource @default(USER_PROFILE)
+  isActive    Boolean                @default(true)
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  @@index([userId, isActive])
+  @@index([anchorType])
+}
+
+model LearningJob {
+  id              String              @id @default(uuid())
+  type            LearningJobType
+  status          LearningJobStatus   @default(PENDING)
+  priority        LearningJobPriority @default(NORMAL)
+  activeKey       String?             @unique
+  userId          String?
+  payload         Json?
+  result          Json?
+  availableAt     DateTime            @default(now())
+  leaseExpiresAt  DateTime?
+  attempts        Int                 @default(0)
+  maxAttempts     Int                 @default(3)
+  lastError       String?
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  user            User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items           LearningJobItem[]
+  recommendationRecompute RecommendationRecomputeJob?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([status, availableAt])
+  @@index([userId, type])
+  @@index([leaseExpiresAt])
+}
+
+model LearningJobItem {
+  id          String                @id @default(uuid())
+  learningJobId String
+  rawRecordId String?
+  status      LearningJobItemStatus @default(PENDING)
+  errorMessage String?
+  learningJob LearningJob           @relation(fields: [learningJobId], references: [id], onDelete: Cascade)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  @@index([learningJobId, status])
+  @@index([rawRecordId])
+}
+
+model RecommendationRecomputeJob {
+  id            String      @id @default(uuid())
+  learningJobId String      @unique
+  userId        String
+  reason        String
+  learningJob   LearningJob @relation(fields: [learningJobId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@index([userId])
+}
+
+model LlmExtractionCache {
+  id                    String   @id @default(uuid())
+  cacheKey              String   @unique
+  provider              String
+  model                 String
+  promptVersion         String
+  result                Json
+  estimatedInputTokens  Int      @default(0)
+  estimatedOutputTokens Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([provider, model, promptVersion])
+}
