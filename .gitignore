@@ -29,6 +29,9 @@ server/tsconfig.seed.json
 AGENTS.md
 skills-lock.json
 
+# Local project documentation
+docs/
+
 # Local report and LaTeX build artifacts
 Báo cáo.tex
 Báo Cáo Project II.pdf

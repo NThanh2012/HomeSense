@@ -1,138 +1,90 @@
 # HomeSense
 
-HomeSense la web mua ban bat dong san voi frontend NextJS trong `client/` package `web` va backend NestJS trong `server/` package `api`.
+HomeSense là website hỗ trợ đăng tin, tìm kiếm và gợi ý bất động sản theo nhu cầu của từng người dùng.
 
-## Stack
+Hệ thống gồm frontend Next.js, backend NestJS, PostgreSQL cho dữ liệu nghiệp vụ và MongoDB cho dữ liệu thô từ các nguồn hợp lệ.
 
-- Frontend: NextJS App Router trong `client/`.
-- Backend: NestJS modular monolith trong `server/`.
-- Raw learning/audit data: MongoDB + Mongoose; `RawPost` cũ chỉ được giữ lại dạng legacy.
-- Normalized/business data: PostgreSQL + Prisma.
-- Package manager: pnpm.
+## Chức năng chính
 
-## Current State
+- Đăng ký, đăng nhập và quản lý hồ sơ người dùng.
+- Tìm kiếm, lọc và xem chi tiết bất động sản đã công khai.
+- Lưu tin và gửi yêu cầu liên hệ.
+- Người bán tạo tin bằng biểu mẫu có cấu trúc, lưu nháp và gửi quản trị viên duyệt.
+- Quản trị viên kiểm duyệt tin, người dùng, yêu cầu liên hệ và nguồn dữ liệu.
+- Phân tích tín hiệu nhu cầu từ hành vi trong hệ thống và nguồn bên ngoài được cho phép.
+- Tạo nhiều nhóm ý định và xếp hạng gợi ý bằng thuật toán có thể giải thích.
+- Xử lý tác vụ học nhu cầu và tính lại gợi ý bằng PostgreSQL job runner.
 
-- Chi seller-submitted listing duoc tao `Property`: nguoi ban tu nhap day du form co cau truc, tao `DRAFT`, gui admin thanh `PENDING_REVIEW`, admin publish thanh `PUBLISHED`.
-- Luong `raw-posts` -> `property-analysis` -> `properties` va cac API/UI nhap raw property post da bi vo hieu hoa; he thong khong tao tin BDS tu du lieu ben ngoai.
-- Schema va row `RawPost`/`PropertyAnalysis` cu duoc giu lai khong pha huy de tuong thich va audit, nhung khong tao `Property` moi.
-- Frontend da co property list/detail, auth, user dashboard va admin pages.
-- Phase 7 raw-post ingestion la chuc nang lich su va hien da bi vo hieu hoa.
-- Phase 8: search/filter/sort UX cho `/properties`.
-- Phase 9: user demand signal ingestion va rule-based demand analysis.
-- Phase 10: demand-property matching/recommendation voi `DemandPropertyMatch`.
-- Phase 11: recommendation feedback + user behavior learning loop:
-    - `UserBehaviorEvent`, `UserPreferenceProfile`,
-    - `/user-behaviors`, `/user-preferences`, recommendation feedback/recompute APIs,
-    - behavior boost nhe cho recommendation score,
-    - frontend tracking trong website, khong tracking ngoai he thong.
-- Phase 12: Hybrid Ranking v1 voi final score tu base match, preference, feedback, freshness va status penalty.
-- Phase 13: Authorized Source Integration + Data Governance:
-    - `DataSource`, `SourceImportBatch`, `SourceImportRecord`,
-    - import JSON co kiem soat chi con cho `RawUserSignal`/`RawExternalBehavior`; `PROPERTY_POST` khong con duoc chap nhan,
-    - duplicate governed import duoc `SKIPPED`, khong ghi de raw evidence,
-    - admin UI cho data sources va source imports.
-- Phase 14: Gemini-assisted external behavior learning loop:
-    - nhan external behavior qua governed source import tu DEV hoac social/partner source co API, thoa thuan hoac user consent hop le,
-    - raw arbitrary JSON luu trong MongoDB `RawExternalBehavior`,
-    - admin link va bat/tat `externalUserRef` voi tai khoan HomeSense,
-    - external payload linh hoat duoc luu trong MongoDB va materialize thanh BDS signals co cau truc.
-- Phase 15-21 backend-first learning core:
-    - canonical `UserPreferenceSignal`, multi-intent `UserRealEstateIntent`, `UserLocationAnchor`,
-    - rich property features va unified hybrid ranking co event-driven time decay,
-    - PostgreSQL `LearningJob` runner co lease/retry/dedupe; login chi queue/promote job, khong cho Gemini,
-    - rule-based extraction + cache truoc, Gemini chi fallback cho payload kho,
-    - admin skeleton cho learning jobs/external behaviors/user intents,
-    - public property metadata, sitemap, robots va JSON-LD.
+## Công nghệ
 
-## Main Backend APIs
+- Frontend: Next.js 15, React 19, TypeScript.
+- Backend: NestJS 11, TypeScript.
+- Cơ sở dữ liệu nghiệp vụ: PostgreSQL 16, Prisma 6.
+- Dữ liệu thô: MongoDB 7, Mongoose 8.
+- Môi trường local: Docker Compose, pnpm workspace.
+- Trích xuất dự phòng: Gemini API.
 
-- Public properties: `GET /properties`, `GET /properties/:id`.
-- Auth/users: `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /users/me`, `PATCH /users/me`.
-- User features: favorites, inquiries, recommendations, user behaviors, user preferences.
-- Admin: overview, properties, inquiries, user signals, user demands, demand analysis, recommendations va learning jobs; khong con raw-property ingestion.
-- Seller properties: `POST /properties/me`, `GET /properties/me`, `GET /properties/me/:id`, `PATCH /properties/me/:id`, `PATCH /properties/me/:id/submit`.
+## Cấu trúc dự án
 
-## Current Boundaries
-
-- Chua lam notification, payment, crawler/scraper, queue chuyen dung, microservice hoac CQRS.
-- Gemini Phase 14 chi trich xuat tieu chi BDS tu governed external behavior khi rule/cache khong du; khong rank recommendation va khong suy luan du lieu nhay cam.
-- Chua co crawler/scraper, connector API that hoac queue import.
-- Khong goi user demand analysis hoac behavior learning la personality profiling.
-- MongoDB chi luu raw learning/audit data; PostgreSQL luu normalized/business data. Legacy `RawPost` rows khong bi xoa tu dong.
-- Chi seller structured form duoc tao `Property`; `RawPost`, `property-analysis`, import JSON, `USER_SIGNAL`, `EXTERNAL_BEHAVIOR` va Gemini khong duoc tao tin BDS.
-- `USER_SIGNAL` va `EXTERNAL_BEHAVIOR` van co the phuc vu hoc nhu cau/recommendation trong pham vi du lieu BDS.
-
-## Cai Dependencies
-
-```bash
-pnpm install
+```text
+client/    Giao diện Next.js
+server/    REST API NestJS và Prisma
+infra/     Cấu hình Docker Compose
 ```
 
-Neu may chua nhan `pnpm`, dung Corepack:
+## Chạy dự án trên máy cá nhân
+
+### 1. Cài thư viện
 
 ```bash
 corepack pnpm install
 ```
 
-## Bat Database Local
+### 2. Cấu hình môi trường
 
-Docker Compose nam trong `infra/docker-compose.yml`.
+Tạo các file môi trường từ những file mẫu sau:
+
+- `.env.example` thành `.env`.
+- `server/.env.example` thành `server/.env`.
+- `client/.env.example` thành `client/.env.local`.
+
+`GEMINI_API_KEY` có thể để trống nếu chỉ sử dụng bộ phân tích theo luật và bộ nhớ đệm.
+
+### 3. Khởi động cơ sở dữ liệu
 
 ```bash
 docker compose -f infra/docker-compose.yml up -d
 ```
 
-PostgreSQL map ra host port `5433`; MongoDB dung port local `27017`.
+PostgreSQL sử dụng cổng `5433`; MongoDB sử dụng cổng `27017`.
 
-Env mau:
-
-```env
-DATABASE_URL="postgresql://support_bds:support_bds@localhost:5433/support_bds?schema=public"
-MONGODB_URI="mongodb://localhost:27017/support_bds_raw"
-API_PORT=3001
-NODE_ENV=development
-GEMINI_API_KEY=""
-GEMINI_MODEL="gemini-3.5-flash"
-```
-
-## Prisma
+### 4. Chuẩn bị Prisma
 
 ```bash
-cd server
-corepack pnpm prisma:generate
-corepack pnpm prisma:migrate:deploy
+corepack pnpm --filter api prisma:generate
+corepack pnpm --filter api prisma:migrate:deploy
 ```
 
-## Chay Local
+### 5. Khởi động ứng dụng
+
+Mở hai terminal và chạy:
 
 ```bash
-cd server
-corepack pnpm start:dev
-
-cd ../client
-corepack pnpm dev
+corepack pnpm dev:api
 ```
-
-API mac dinh:
-
-```txt
-http://localhost:3001
-```
-
-## Verify
 
 ```bash
-cd server
-corepack pnpm build
-
-cd ../client
-corepack pnpm build
+corepack pnpm dev:web
 ```
 
-Verify gan nhat:
+- Website: `http://localhost:3000`.
+- API: `http://localhost:3001`.
 
-- `corepack pnpm prisma:generate` trong `server/`: passed.
-- `corepack pnpm build` trong `server/`: passed.
-- `corepack pnpm exec tsc --noEmit` trong `client/`: passed.
-- `corepack pnpm build` trong `client/`: passed; remote `next/font` da duoc loai bo.
-- Toan bo 12 Prisma migrations, gom `20260712090000_seller_only_property_default_draft`, da deploy vao PostgreSQL Docker local.
+## Nguyên tắc dữ liệu
+
+- Chỉ tài khoản đã xác thực mới được tạo tin bất động sản bằng biểu mẫu có cấu trúc.
+- Tin mới bắt đầu ở trạng thái `DRAFT`, sau đó được gửi duyệt và chỉ hiển thị công khai khi chuyển thành `PUBLISHED`.
+- Dữ liệu hành vi bên ngoài chỉ phục vụ phân tích nhu cầu; không được dùng để tạo tin đăng.
+- MongoDB chỉ lưu dữ liệu thô; PostgreSQL lưu dữ liệu đã chuẩn hóa và nghiệp vụ người dùng.
+- Gemini chỉ hỗ trợ trích xuất khi luật và bộ nhớ đệm chưa xử lý được; mô hình không quyết định thứ hạng gợi ý.
+- Luồng `RawPost` và `PropertyAnalysis` cũ được giữ để tương thích nhưng không được dùng để tạo `Property` mới.
